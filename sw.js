@@ -1,6 +1,6 @@
 // Service worker: rede primeiro, com cache de reserva do casco do app (e requisito para instalar como PWA).
 // Requisições ao Firebase (outros domínios) nunca passam pelo cache.
-const VERSAO = "loja-v12";
+const VERSAO = "loja-v13";
 const BASE = [
   "./", "index.html", "acompanhar.html", "css/style.css", "css/splash.css",
   "js/db.js", "js/store.js", "js/acompanhar.js", "js/pwa.js", "js/splash.js",

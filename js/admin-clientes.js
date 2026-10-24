@@ -37,8 +37,48 @@ window.Admin.modulos.push((A) => {
       }, { salvar: "Salvar cliente" });
   };
 
+  // Clientes que compraram pelo site e ainda não estão cadastrados entram sozinhos na aba Clientes.
+  // Roda ao entrar no painel, quando chega pedido novo e ao abrir a aba. Só olha pedidos criados depois
+  // da última sincronização (assim um cliente excluído não volta sozinho). Já cadastrado = mesmo telefone ou mesmo nome.
+  let sincronizando = null;
+  const digitos = (s) => String(s || "").replace(/D/g, "");
+  A.sincronizarClientes = () => {
+    if (!sincronizando) sincronizando = (async () => {
+      try {
+        const ref = DB.fs.collection("configuracoes").doc("contadores");
+        const marca = ((await ref.get()).data() || {}).clientesSyncEm || "";
+        const novos = (await DB.pedidos.listar()).filter((p) => p.criadoEm && p.criadoEm > marca && p.cliente && (p.cliente.nome || "").trim())
+          .sort((a, b) => a.criadoEm.localeCompare(b.criadoEm));
+        if (!novos.length) return 0;
+        const existentes = await DB.clientes.listar();
+        const fones = new Set(existentes.map((x) => digitos(x.telefone)).filter((d) => d.length >= 8));
+        const nomes = new Set(existentes.map((x) => (x.nome || "").trim().toLowerCase()));
+        let criados = 0;
+        for (const p of novos) {
+          const nome = p.cliente.nome.trim(), fone = digitos(p.cliente.telefone);
+          if ((fone.length >= 8 && fones.has(fone)) || nomes.has(nome.toLowerCase())) continue;
+          await DB.clientes.salvar({
+            nome, telefone: (p.cliente.telefone || "").trim(), documento: p.cliente.cpf || "", email: p.cliente.email || "",
+            endereco: p.tipo === "entrega" ? p.endereco || "" : "", obs: "Cadastrado automaticamente pelo pedido " + p.codigo,
+            origem: "site", criadoEm: p.criadoEm,
+          });
+          if (fone.length >= 8) fones.add(fone);
+          nomes.add(nome.toLowerCase());
+          criados++;
+        }
+        await ref.set({ clientesSyncEm: novos[novos.length - 1].criadoEm }, { merge: true });
+        return criados;
+      } catch (e) { console.error("sincronizar clientes:", e); return 0; }
+      finally { sincronizando = null; }
+    })();
+    return sincronizando;
+  };
+  const aoEntrarAnterior = A.aoEntrar;
+  A.aoEntrar = async () => { if (aoEntrarAnterior) await aoEntrarAnterior(); A.sincronizarClientes(); };
+
   A.telas.clientes = async () => {
     carregando("clientes");
+    await A.sincronizarClientes();
     const [clientes, contas] = await Promise.all([DB.clientes.listar(), DB.contas.listar()]);
     const aberto = {};
     contas.filter((x) => x.tipo === "receber" && x.status !== "pago" && x.clienteId).forEach((x) => { aberto[x.clienteId] = (aberto[x.clienteId] || 0) + x.valor; });

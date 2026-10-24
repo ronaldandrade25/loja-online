@@ -331,6 +331,7 @@ Observações:
 - Ao abrir a loja aparece uma **tela de abertura** (também ao abrir **Acompanhar pedido**, tanto ao ir da loja para lá quanto ao voltar) neutra (fundo branco): a loja busca as configurações e carrega a **logo**, que aparece **em círculo**, com um anel girando em volta na **cor principal** cadastrada e só então mostra o site já com as cores certas, sem piscar o roxo padrão. O **rodapé** usa a cor principal da loja.
 - O **painel administrativo** (tela de login e menu lateral) também usa a **cor principal** cadastrada em Configurações; a cor muda assim que você salva e fica guardada no aparelho para o login já abrir na cor certa.
 - Ao ir da loja para o painel (login) aparece a mesma **tela de abertura com a logo**. Na tela de login há o botão **Baixar o app**: ele instala o painel como app (PWA próprio, `manifest-admin.webmanifest`), que **abre direto na tela de login**. O botão só aparece em navegadores que permitem instalar (Chrome/Edge/Android); no iPhone use Compartilhar > Adicionar à Tela de Início.
+- **Clientes do site**: quem compra pelo site e ainda não está cadastrado entra sozinho na aba **Clientes** (nome, telefone, CPF, e-mail e endereço do pedido). A conferência é feita pelo painel ao entrar, quando chega pedido novo e ao abrir a aba Clientes; considera já cadastrado quem tem o mesmo telefone ou nome. Cliente excluído não volta sozinho.
 
 #### Site: QR Code e link
 Botão **Site** no alto da tela de Configurações (aparece em todas as abas):
@@ -423,7 +424,7 @@ Observações sobre o funcionamento:
 - **iPhone / Safari:** botão Compartilhar → **Adicionar à Tela de Início**.
 - Requer HTTPS (ou `localhost`).
 - O app guarda em cache a estrutura da loja, mas **o catálogo precisa de internet**, pois vem do Firebase.
-- O ícone e a cor da barra do app instalado são fixos (índigo). Para mudar, edite `manifest.webmanifest`, `theme-color` nos HTMLs e gere novos ícones na pasta `icons/`.
+- O ícone do app (loja, acompanhar pedido e painel) é a imagem da pasta `icons/` (`icon-180`, `icon-192`, `icon-512` e `icon-maskable-512`, esta com margem de segurança para o recorte redondo do Android). Para trocar, substitua esses arquivos mantendo os nomes. A cor da barra do app instalado segue `theme-color`/`manifest.webmanifest`.
 
 ---
 

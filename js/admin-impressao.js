@@ -298,6 +298,7 @@ window.Admin.modulos.push((A) => {
         novoPedido({ ...ch.doc.data(), id: ch.doc.id });
       });
       A.atualizarPill();
+      if (A.sincronizarClientes) A.sincronizarClientes();
       if (!$("#tab-pedidos").hidden) A.abrirTab("pedidos"); // lista aberta: atualiza na hora
     }, (err) => console.error("escuta de pedidos:", err));
   };
