@@ -1,0 +1,7 @@
+# Arquivos locais (não vão para o repositório)
+node_modules/
+.vscode/
+.DS_Store
+Thumbs.db
+*.log
+*.tmp

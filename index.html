@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Loja Online</title>
+  <meta name="theme-color" content="#4f46e5" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="icons/icon-180.png" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <a class="logo" href="#inicio"><span id="logo-ico"><i class="fa-solid fa-bag-shopping"></i></span><span id="logo-nome">Loja Online</span></a>
+
+    <nav class="main-nav" id="main-nav" aria-label="Navegação principal">
+      <a href="#inicio" data-nav="inicio">Início</a>
+      <a href="#produtos" data-nav="produtos">Produtos</a>
+      <a href="#localizacao" data-nav="localizacao" id="nav-localizacao">Localização</a>
+      <a href="#contato" data-nav="contato" id="nav-contato">Contato</a>
+    </nav>
+
+    <a class="track-link" href="acompanhar.html"><i class="fa-solid fa-box-open"></i><span>Acompanhar pedido</span></a>
+    <button class="cart-btn" id="abrir-carrinho" aria-label="Abrir carrinho">
+      <i class="fa-solid fa-cart-shopping"></i><span class="badge" id="cart-badge">0</span>
+    </button>
+  </header>
+
+  <!-- PÁGINA INICIAL -->
+  <div id="view-inicio">
+    <section class="hero" id="hero">
+      <div class="hero-inner">
+        <h1 id="hero-titulo">Loja Online</h1>
+        <p id="hero-slogan"></p>
+        <a class="hero-cta" href="#produtos"><span id="hero-cta-txt">Ver produtos</span> <i class="fa-solid fa-arrow-right"></i></a>
+      </div>
+    </section>
+
+    <section class="home-secao" id="home-categorias" hidden>
+      <div class="secao-in">
+        <h2 class="secao-titulo" id="tit-categorias">Categorias</h2>
+        <div class="carrossel" data-carrossel>
+          <button type="button" class="car-seta prev" aria-label="Anteriores"><i class="fa-solid fa-chevron-left"></i></button>
+          <div class="car-trilho cat-cards" id="category-cards" tabindex="0"></div>
+          <button type="button" class="car-seta next" aria-label="Próximas"><i class="fa-solid fa-chevron-right"></i></button>
+        </div>
+      </div>
+    </section>
+
+    <section class="home-secao" id="home-destaques" hidden>
+      <div class="secao-in">
+        <h2 class="secao-titulo" id="tit-destaques">Produtos em destaque</h2>
+        <div class="carrossel" data-carrossel>
+          <button type="button" class="car-seta prev" aria-label="Anteriores"><i class="fa-solid fa-chevron-left"></i></button>
+          <div class="car-trilho" id="featured-container" tabindex="0"></div>
+          <button type="button" class="car-seta next" aria-label="Próximos"><i class="fa-solid fa-chevron-right"></i></button>
+        </div>
+        <div class="secao-mais"><a class="btn-sec" href="#produtos">Ver todos os produtos <i class="fa-solid fa-arrow-right"></i></a></div>
+      </div>
+    </section>
+
+    <section class="home-secao" id="localizacao" hidden>
+      <div class="secao-in">
+        <h2 class="secao-titulo" id="tit-localizacao">Localização</h2>
+        <div class="info-card">
+          <div class="info-dados">
+            <i class="fa-solid fa-location-dot"></i>
+            <div>
+              <p id="loja-endereco">Consulte nosso endereço pelo WhatsApp.</p>
+              <p class="info-sub" id="loja-horario"></p>
+              <a class="btn-sec" id="loja-mapa" href="#" target="_blank" rel="noopener" hidden><i class="fa-solid fa-map-location-dot"></i> Ver no mapa</a>
+            </div>
+          </div>
+          <iframe id="loja-mapa-embed" title="Mapa da loja" loading="lazy" referrerpolicy="no-referrer-when-downgrade" hidden></iframe>
+        </div>
+      </div>
+    </section>
+
+    <section class="home-secao" id="contato" hidden>
+      <div class="secao-in">
+        <h2 class="secao-titulo" id="tit-contato">Contato</h2>
+        <p class="secao-texto" id="texto-contato"></p>
+        <div class="contact-links" id="contact-links"></div>
+      </div>
+    </section>
+  </div>
+
+  <!-- PRODUTOS -->
+  <div id="view-produtos" hidden>
+    <div class="produtos-topo">
+      <div class="secao-in">
+        <a class="voltar" href="#inicio"><i class="fa-solid fa-arrow-left"></i> Voltar</a>
+        <p class="eyebrow" id="prod-subtitulo">Catálogo completo</p>
+        <h1 class="pagina-titulo" id="prod-titulo">Produtos</h1>
+        <div class="busca-grande">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input id="busca" type="search" placeholder="Buscar produtos..." aria-label="Buscar produtos" autocomplete="off" />
+        </div>
+      </div>
+    </div>
+
+    <div class="catalogo">
+      <aside class="cat-lateral" id="cat-lateral">
+        <button type="button" class="cat-toggle" id="cat-toggle" aria-expanded="false" aria-controls="chips">
+          <span><i class="fa-solid fa-bars-staggered"></i> Categorias: <b id="cat-atual">Todas</b></span><i class="fa-solid fa-chevron-down"></i>
+        </button>
+        <h4 class="cat-titulo">Categorias</h4>
+        <nav class="cat-lista" id="chips" aria-label="Categorias"></nav>
+      </aside>
+
+      <section class="catalogo-lista">
+        <div class="catalogo-barra">
+          <span id="contagem" class="contagem"></span>
+          <select id="ordem" aria-label="Ordenar">
+            <option value="destaque">Destaques</option>
+            <option value="menor">Menor preço</option>
+            <option value="maior">Maior preço</option>
+            <option value="nome">Nome (A-Z)</option>
+          </select>
+        </div>
+        <div class="grid" id="grid"></div>
+        <p class="vazio" id="vazio" hidden>Nenhum produto encontrado.</p>
+      </section>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <p id="rodape-copy"></p>
+    <p><button class="link-btn" id="instalar" hidden><i class="fa-solid fa-mobile-screen"></i> Instalar app</button>
+      <a href="acompanhar.html">Acompanhar pedido</a></p>
+    <a class="admin-link" href="admin.html">Área administrativa</a>
+  </footer>
+
+  <!-- Modal de produto -->
+  <div class="modal" id="modal-produto" hidden>
+    <div class="modal-box">
+      <button class="fechar" data-fechar>&times;</button>
+      <div id="produto-detalhe"></div>
+    </div>
+  </div>
+
+  <!-- Carrinho -->
+  <div class="overlay" id="overlay"></div>
+  <aside class="drawer" id="drawer" aria-hidden="true" aria-label="Carrinho de compras">
+    <div class="drawer-head">
+      <h2>Meu carrinho</h2>
+      <button class="fechar" id="fechar-carrinho" aria-label="Fechar carrinho">&times;</button>
+    </div>
+
+    <ol class="passos" id="passos" hidden>
+      <li data-p="1" class="atual"><span>1</span><em>Produtos</em></li>
+      <li data-p="2"><span>2</span><em>Entrega</em></li>
+      <li data-p="3"><span>3</span><em>Pagamento</em></li>
+    </ol>
+
+    <form class="drawer-form" id="checkout" autocomplete="on" novalidate>
+      <button type="submit" class="oculto-submit" tabindex="-1" aria-hidden="true"></button>
+      <div class="drawer-body">
+
+        <!-- Etapa 1: produtos -->
+        <section class="passo" data-passo="1" aria-label="Produtos do carrinho">
+          <div id="cart-itens"></div>
+        </section>
+
+        <!-- Etapa 2: entrega ou retirada -->
+        <section class="passo" data-passo="2" hidden aria-label="Entrega ou retirada">
+          <h3 id="modo-titulo">Como você prefere receber?</h3>
+          <div class="toggle" id="toggle-modo">
+            <label id="lbl-entrega"><input type="radio" name="entrega" value="entrega" checked /><span><i class="fa-solid fa-truck-fast"></i> Entrega</span></label>
+            <label id="lbl-retirada"><input type="radio" name="entrega" value="retirada" /><span><i class="fa-solid fa-store"></i> Retirada na loja</span></label>
+          </div>
+
+          <input name="nome" placeholder="Seu nome" aria-label="Seu nome" required autocomplete="name" />
+          <input name="telefone" type="tel" placeholder="WhatsApp (DDD + número)" aria-label="WhatsApp" required autocomplete="tel" />
+          <div data-campo="email" hidden><input name="email" type="email" placeholder="E-mail" aria-label="E-mail" autocomplete="email" /></div>
+          <div data-campo="cpf" hidden><input name="cpf" placeholder="CPF ou CNPJ" aria-label="CPF ou CNPJ" inputmode="numeric" /></div>
+
+          <div id="campos-entrega" class="passo-campos">
+            <p class="dica-passo" id="entrega-aviso" hidden></p>
+            <div class="linha" data-campo="cep">
+              <input name="cep" placeholder="CEP" aria-label="CEP" maxlength="9" inputmode="numeric" autocomplete="postal-code" />
+              <button type="button" class="btn-sec" id="buscar-cep">Buscar</button>
+            </div>
+            <input name="endereco" placeholder="Rua, número, bairro, cidade" aria-label="Endereço" autocomplete="street-address" />
+            <div data-campo="complemento"><input name="complemento" placeholder="Complemento (opcional)" aria-label="Complemento" /></div>
+            <select name="regiao" id="regiao" aria-label="Região de entrega" hidden></select>
+          </div>
+          <div id="campos-retirada" class="passo-campos" hidden>
+            <div class="caixa-info" id="retirada-info"></div>
+            <div class="linha">
+              <input name="data" type="date" aria-label="Data da retirada" />
+              <select name="hora" aria-label="Horário da retirada"></select>
+            </div>
+          </div>
+        </section>
+
+        <!-- Etapa 3: pagamento -->
+        <section class="passo" data-passo="3" hidden aria-label="Forma de pagamento">
+          <div class="resumo-entrega" id="resumo-entrega"></div>
+
+          <h3>Forma de pagamento</h3>
+          <div class="opcoes-pg" id="opcoes-pg">
+            <label data-pg="pix"><input type="radio" name="pagamento" value="PIX" checked /><span><i class="fa-solid fa-qrcode"></i> PIX</span></label>
+            <label data-pg="credito"><input type="radio" name="pagamento" value="Cartão de Crédito" /><span><i class="fa-solid fa-credit-card"></i> Crédito</span></label>
+            <label data-pg="debito"><input type="radio" name="pagamento" value="Cartão de Débito" /><span><i class="fa-regular fa-credit-card"></i> Débito</span></label>
+            <label data-pg="dinheiro"><input type="radio" name="pagamento" value="Dinheiro" /><span><i class="fa-solid fa-money-bill-wave"></i> Dinheiro</span></label>
+          </div>
+          <div class="caixa-info" id="pix-info" hidden></div>
+          <p class="dica-passo" id="pagamento-aviso" hidden></p>
+          <input name="troco" type="number" min="0" step="0.01" placeholder="Troco para quanto? (opcional)" aria-label="Troco para" hidden />
+          <div data-campo="obs"><textarea name="obs" rows="2" placeholder="Observações (opcional)" aria-label="Observações"></textarea></div>
+
+          <div class="linha">
+            <input id="cupom" placeholder="Cupom de desconto" aria-label="Cupom de desconto" />
+            <button type="button" class="btn-sec" id="aplicar-cupom">Aplicar</button>
+          </div>
+          <p class="feedback" id="cupom-msg"></p>
+
+          <div class="resumo">
+            <div><span>Subtotal</span><span id="r-sub">R$ 0,00</span></div>
+            <div id="r-desc-linha" hidden><span>Desconto</span><span id="r-desc"></span></div>
+            <div><span>Entrega</span><span id="r-frete">R$ 0,00</span></div>
+            <div class="total"><span>Total</span><span id="r-total">R$ 0,00</span></div>
+          </div>
+        </section>
+      </div>
+
+      <div class="drawer-foot" id="drawer-foot" hidden>
+        <div class="mini-total"><span id="mini-rotulo">Subtotal</span><strong id="mini-total">R$ 0,00</strong></div>
+        <div class="passo-nav">
+          <button type="button" class="btn-sec" id="passo-voltar" hidden><i class="fa-solid fa-arrow-left"></i> Voltar</button>
+          <button type="button" class="btn-principal" id="passo-avancar">Continuar <i class="fa-solid fa-arrow-right"></i></button>
+        </div>
+      </div>
+    </form>
+  </aside>
+
+  <!-- Pedido registrado -->
+  <div class="modal" id="modal-sucesso" hidden>
+    <div class="modal-box sucesso">
+      <i class="fa-solid fa-circle-check"></i>
+      <h2>Pedido registrado!</h2>
+      <p id="sucesso-texto">Guarde o código para acompanhar:</p>
+      <div class="codigo" id="sucesso-codigo"></div>
+      <div class="caixa-info" id="sucesso-pix" hidden></div>
+      <a class="btn-principal" id="sucesso-link" href="#">Acompanhar pedido</a>
+      <a class="btn-sec" id="sucesso-whats" href="#" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> Enviar pedido pelo WhatsApp</a>
+      <button class="link-btn" data-fechar>Continuar comprando</button>
+    </div>
+  </div>
+
+  <a class="zap-flutuante" id="zap-flutuante" href="#" target="_blank" rel="noopener" aria-label="Falar no WhatsApp" hidden><i class="fab fa-whatsapp"></i></a>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="firebase-config.js"></script>
+  <script src="js/db.js"></script>
+  <script src="js/pwa.js"></script>
+  <script src="js/store.js"></script>
+</body>
+</html>
