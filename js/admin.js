@@ -59,6 +59,18 @@ document.addEventListener("DOMContentLoaded", () => {
   });
   $("#sair").addEventListener("click", () => auth.signOut());
 
+  // Cores do painel e do login seguem a cor principal cadastrada em Configurações.
+  // A última cor fica guardada no aparelho para o login já abrir na cor certa.
+  const pintar = (hex) => {
+    if (!/^#[0-9a-f]{6}$/i.test(hex || "")) return;
+    const r = document.documentElement.style;
+    r.setProperty("--primaria", hex); r.setProperty("--on-primaria", DB.contraste(hex));
+    const tema = document.querySelector('meta[name="theme-color"]'); if (tema) tema.content = hex;
+  };
+  window.Admin.pintar = pintar;
+  try { pintar(localStorage.getItem("lo_admin_cor")); } catch { /* ignorado */ }
+  DB.config.obter().then((c) => { pintar(c.corPrimaria); try { localStorage.setItem("lo_admin_cor", c.corPrimaria || ""); } catch { /* ignorado */ } }).catch(() => {});
+
   auth.onAuthStateChanged(async (user) => {
     if (!user) { $("#app").hidden = true; $("#login").hidden = false; if (window.Admin.aoSair) window.Admin.aoSair(); return; }
     // A lista de administradores fica nas regras do Firestore (regras.md). Para saber se este

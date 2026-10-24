@@ -761,6 +761,22 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   });
 
+  // ---- Tela de abertura: busca a logo, mostra o efeito e só então abre a loja ----
+  const splash = $("#splash");
+  const fecharSplash = () => { if (!splash) return; splash.classList.add("saindo"); setTimeout(() => splash.remove(), 600); };
+  const abrirSplash = async () => {
+    if (!splash) return;
+    const t0 = Date.now();
+    const logo = splash.querySelector(".sp-logo");
+    if (config.logoUrl) {
+      await new Promise((ok) => { const img = new Image(); img.alt = ""; img.onload = () => { logo.replaceChildren(img); ok(); }; img.onerror = ok; img.src = config.logoUrl; setTimeout(ok, 4000); });
+    }
+    splash.querySelector(".sp-nome").textContent = config.nomeLoja || "";
+    splash.classList.add("pronto");
+    if (!logo.querySelector("img")) logo.replaceChildren();
+    await new Promise((ok) => setTimeout(ok, Math.max(0, 1100 - (Date.now() - t0))));
+  };
+
   // ---- Carga inicial ----
   $("#grid").innerHTML = `<p class="vazio">Carregando...</p>`;
   try {
@@ -770,6 +786,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   } catch (err) {
     console.error(err);
     $("#grid").innerHTML = `<p class="vazio">Não foi possível carregar a loja. Verifique a configuração do Firebase e as regras do Firestore.</p>`;
+    fecharSplash();
     return;
   }
   aplicarConfig();
@@ -780,4 +797,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   renderGrid();
   atualizarModo();
   rotear();
+  const tema = document.querySelector('meta[name="theme-color"]');
+  if (tema) tema.content = getComputedStyle(document.documentElement).getPropertyValue("--primaria").trim() || tema.content;
+  await abrirSplash();
+  fecharSplash();
 });

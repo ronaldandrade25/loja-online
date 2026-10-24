@@ -171,7 +171,7 @@ window.Admin.modulos.push((A) => {
                 escolha("Cantos dos botões e cartões", "cantos", c.cantos, [["reto", "Retos"], ["suave", "Suaves"], ["arredondado", "Bem arredondados"]]))}
         ${titulo("Logo")}
         ${imagemCampo("logo", "Logo da loja (substitui o ícone do topo)", "Fundo transparente funciona melhor (PNG). Ela é reduzida automaticamente.", c.logoUrl)}
-        ${titulo("Banner da página inicial")}
+        ${titulo("Banner da página inicial", "Com uma imagem de banner, a loja mostra só a imagem (sem título, texto nem botão sobre ela). Os três campos abaixo aparecem apenas enquanto não houver imagem.")}
         ${imagemCampo("banner", "Imagem do banner", "Use uma imagem larga (ex.: 1600×500). Ela é reduzida para caber no banco de dados; para fotos grandes prefira colar o endereço (URL) de uma imagem hospedada.", c.bannerUrl)}
         ${grade(campo("Título do banner", "bannerTitulo", c.bannerTitulo, "", "Em branco: usa o nome da loja."), campo("Texto do banner", "bannerTexto", c.bannerTexto, "", "Em branco: usa o slogan."), campo("Texto do botão do banner", "bannerBotao", c.bannerBotao))}`,
 
@@ -428,6 +428,7 @@ window.Admin.modulos.push((A) => {
       if (await tentar(() => DB.config.salvar(novo), "Não foi possível salvar as configurações")) {
         Object.assign(c, novo);
         A.configMudou(novo);
+        A.pintar(novo.corPrimaria); try { localStorage.setItem("lo_admin_cor", novo.corPrimaria || ""); } catch { /* ignorado */ }
         $("#side-nome").textContent = novo.nomeLoja;
         $("#cfg-estado").textContent = "Salvo";
         toast("Configurações salvas");

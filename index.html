@@ -8,9 +8,27 @@
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="apple-touch-icon" href="icons/icon-180.png" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <style>
+    /* Tela de abertura neutra: aparece antes de tudo, para não mostrar as cores padrão enquanto a loja carrega */
+    #splash { position: fixed; inset: 0; z-index: 9999; background: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; transition: opacity .45s ease, visibility .45s; }
+    #splash.saindo { opacity: 0; visibility: hidden; }
+    #splash .sp-logo { position: relative; width: 120px; height: 120px; border-radius: 50%; background: #f3f4f6; display: flex; align-items: center; justify-content: center; margin: 14px; }
+    #splash .sp-logo img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; animation: sp-entra .7s cubic-bezier(.2,.9,.3,1.2) both; }
+    /* anel girando em volta da logo; cinza até a loja carregar, depois na cor principal cadastrada */
+    #splash .sp-logo::before { content: ""; position: absolute; inset: -12px; border-radius: 50%; border: 4px solid transparent; border-top-color: var(--sp-cor, #9ca3af); border-right-color: var(--sp-cor, #9ca3af); animation: sp-gira 1s linear infinite; }
+    #splash .sp-logo::after { content: ""; position: absolute; inset: -12px; border-radius: 50%; border: 4px solid var(--sp-cor, #9ca3af); opacity: .15; animation: sp-pulso 1.6s ease-in-out infinite; }
+    #splash.pronto .sp-logo { --sp-cor: var(--primaria); }
+    @keyframes sp-gira { to { transform: rotate(360deg); } }
+    @keyframes sp-pulso { 0%, 100% { transform: scale(1); opacity: .15; } 50% { transform: scale(1.08); opacity: .3; } }
+    @keyframes sp-entra { from { opacity: 0; transform: scale(.55); } to { opacity: 1; transform: scale(1); } }
+    @keyframes sp-nome { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+    @media (prefers-reduced-motion: reduce) { #splash * { animation-duration: .01s !important; } }
+  </style>
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
+  <div id="splash" aria-hidden="true"><div class="sp-logo"></div><div class="sp-nome"></div></div>
+  <script>setTimeout(function () { var s = document.getElementById("splash"); if (s) s.classList.add("saindo"); }, 10000);</script>
   <header class="topbar">
     <a class="logo" href="#inicio"><span id="logo-ico"><i class="fa-solid fa-bag-shopping"></i></span><span id="logo-nome">Loja Online</span></a>
 

@@ -72,7 +72,7 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--primaria); 
 .btn-principal:disabled { background: var(--borda); color: var(--suave); cursor: not-allowed; }
 .btn-sec { padding: 10px 14px; border-radius: var(--raio-pq); border: 1px solid var(--primaria); color: var(--primaria); font-weight: 600; white-space: nowrap; }
 
-.footer { background: var(--secundaria); color: var(--on-secundaria); text-align: center; padding: 28px 20px; font-size: .9rem; display: grid; gap: 8px; }
+.footer { background: var(--primaria); color: var(--on-primaria); text-align: center; padding: 28px 20px; font-size: .9rem; display: grid; gap: 8px; }
 .footer a { color: inherit; text-decoration: underline; }
 .admin-link { font-size: .8rem; opacity: .6; }
 
@@ -360,6 +360,12 @@ body.no-scroll .zap-flutuante { display: none; }
 
 /* Banner: imagem inteira a partir do topo (logo depois do cabeçalho); só corta embaixo se for muito alta */
 .hero--banner { display: block; min-height: 0; background: var(--secundaria); }
-.hero-img { display: block; width: 100%; height: auto; min-height: 260px; max-height: min(560px, 72vh); object-fit: cover; object-position: center top; }
+.hero-img { display: block; width: 100%; height: auto; max-height: min(640px, 80vh); object-fit: cover; object-position: center top; }
 .hero--banner .hero-inner { position: absolute; inset: 0; margin: 0 auto; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; }
-@media (max-width: 760px) { .hero-img { min-height: 240px; } .hero--banner .hero-inner { align-items: center; } }
+
+
+/* Com banner cadastrado, aparece só a imagem: sem camada escura, título, texto ou botão.
+   O título continua no código (invisível) para leitores de tela e buscadores. */
+.hero--banner::before { display: none; }
+.hero--banner .hero-inner { position: absolute; inset: auto; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.hero--banner .hero-cta { display: none; }
