@@ -4,12 +4,14 @@ document.addEventListener("DOMContentLoaded", async () => {
   const $ = (s) => document.querySelector(s);
   let parar = null;
 
-  DB.config.obter().then((c) => {
+  const carregarConfig = DB.config.obter().then((c) => {
     DB.aplicarTema(c);
     $("#logo-nome").textContent = c.nomeLoja;
     document.title = "Acompanhar pedido — " + c.nomeLoja;
     if (c.logoUrl) { const img = new Image(); img.className = "logo-img"; img.alt = ""; img.src = c.logoUrl; const ico = document.querySelector(".logo > i, .logo > span:first-child"); if (ico) ico.replaceWith(img); }
-  }).catch(() => {});
+    return c;
+  }).catch(() => null);
+  carregarConfig.then(async (c) => { if (c) await Splash.abrir(c); Splash.fechar(); });
 
   const etapas = (tipo) => [
     ["novo", "Pedido recebido", "Aguardando confirmação da loja"],

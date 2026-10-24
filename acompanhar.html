@@ -9,8 +9,11 @@
   <link rel="apple-touch-icon" href="icons/icon-180.png" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
   <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/splash.css" />
 </head>
 <body>
+  <div id="splash" aria-hidden="true"><div class="sp-logo"></div><div class="sp-nome"></div></div>
+  <script>setTimeout(function () { var s = document.getElementById("splash"); if (s) s.classList.add("saindo"); }, 10000);</script>
   <header class="topbar">
     <a class="logo" href="index.html"><i class="fa-solid fa-bag-shopping"></i><span id="logo-nome">Loja Online</span></a>
     <span style="flex:1"></span>
@@ -32,6 +35,7 @@
   <script src="firebase-config.js"></script>
   <script src="js/db.js"></script>
   <script src="js/pwa.js"></script>
+  <script src="js/splash.js"></script>
   <script src="js/acompanhar.js"></script>
 </body>
 </html>

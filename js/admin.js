@@ -69,7 +69,10 @@ document.addEventListener("DOMContentLoaded", () => {
   };
   window.Admin.pintar = pintar;
   try { pintar(localStorage.getItem("lo_admin_cor")); } catch { /* ignorado */ }
-  DB.config.obter().then((c) => { pintar(c.corPrimaria); try { localStorage.setItem("lo_admin_cor", c.corPrimaria || ""); } catch { /* ignorado */ } }).catch(() => {});
+  DB.config.obter().then(async (c) => {
+    pintar(c.corPrimaria); try { localStorage.setItem("lo_admin_cor", c.corPrimaria || ""); } catch { /* ignorado */ }
+    await Splash.abrir(c); // mesma tela de abertura da loja, com a logo
+  }).catch(() => {}).then(() => Splash.fechar());
 
   auth.onAuthStateChanged(async (user) => {
     if (!user) { $("#app").hidden = true; $("#login").hidden = false; if (window.Admin.aoSair) window.Admin.aoSair(); return; }

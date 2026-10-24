@@ -328,8 +328,9 @@ Validações ao salvar: pelo menos uma forma de receber e uma forma de pagamento
 Observações:
 - O **banner** aparece logo depois do cabeçalho, mostrando **só a imagem**, na largura inteira e a partir do topo (sem título, texto, botão nem camada escura por cima). Imagens muito altas são cortadas só na parte de baixo (altura máxima de 640 px no computador). Sem imagem de banner, a loja mostra a faixa colorida com o título, o texto e o botão configurados.
 - Logo e banner enviados do computador são reduzidos e guardados dentro do documento de configurações (limite do Firestore: 1 MB por documento). Para imagens grandes, é melhor colar o endereço (URL) de uma imagem hospedada.
-- Ao abrir a loja aparece uma **tela de abertura** neutra (fundo branco): a loja busca as configurações e carrega a **logo**, que aparece **em círculo**, com um anel girando em volta na **cor principal** cadastrada e só então mostra o site já com as cores certas, sem piscar o roxo padrão. O **rodapé** usa a cor principal da loja.
+- Ao abrir a loja aparece uma **tela de abertura** (também ao abrir **Acompanhar pedido**, tanto ao ir da loja para lá quanto ao voltar) neutra (fundo branco): a loja busca as configurações e carrega a **logo**, que aparece **em círculo**, com um anel girando em volta na **cor principal** cadastrada e só então mostra o site já com as cores certas, sem piscar o roxo padrão. O **rodapé** usa a cor principal da loja.
 - O **painel administrativo** (tela de login e menu lateral) também usa a **cor principal** cadastrada em Configurações; a cor muda assim que você salva e fica guardada no aparelho para o login já abrir na cor certa.
+- Ao ir da loja para o painel (login) aparece a mesma **tela de abertura com a logo**. Na tela de login há o botão **Baixar o app**: ele instala o painel como app (PWA próprio, `manifest-admin.webmanifest`), que **abre direto na tela de login**. O botão só aparece em navegadores que permitem instalar (Chrome/Edge/Android); no iPhone use Compartilhar > Adicionar à Tela de Início.
 
 #### Site: QR Code e link
 Botão **Site** no alto da tela de Configurações (aparece em todas as abas):
