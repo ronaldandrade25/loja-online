@@ -36,7 +36,7 @@ window.Admin.modulos.push((A) => {
     if (Array.isArray(p.variantes) && p.variantes.length) {
       return {
         pai: { ...comum, pai: true, vid: "", estoque: num(p.estoque), filhos: p.variantes.length },
-        folhas: p.variantes.map((v) => ({ ...comum, vid: v.id, variante: v.nome, estoque: num(v.estoque), filha: true })),
+        folhas: p.variantes.map((v) => ({ ...comum, vid: v.id, variante: v.nome, codigoVar: v.codigo || "", estoque: num(v.estoque), filha: true })),
       };
     }
     return { pai: null, folhas: [{ ...comum, vid: "", estoque: num(p.estoque) }] };
@@ -80,7 +80,7 @@ window.Admin.modulos.push((A) => {
   const dhAgora = () => new Date().toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" });
   // linhas da tabela exportada: uma por produto/variação, na mesma ordem que aparece na tela
   const linhaExport = (l, cats) => ({
-    codigo: l.p.codigo || "", produto: l.nome, variacao: l.variante || "", categoria: cats[l.p.categoria] || "Sem categoria",
+    codigo: l.codigoVar || l.p.codigo || "", produto: l.nome, variacao: l.variante || "", categoria: cats[l.p.categoria] || "Sem categoria",
     estoque: l.estoque, minimo: l.min, custo: l.custo, preco: l.preco,
     valorCusto: l.custo != null ? l.estoque * l.custo : null, valorVenda: l.estoque * l.preco, situacao: situacao(l),
   });

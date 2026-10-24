@@ -93,7 +93,8 @@ loja online/
 │   ├── admin-pdv.js        PDV: venda, vendas do dia e caixa
 │   ├── admin-financeiro.js Contas a pagar e a receber (Empresa/Pessoal)
 │   ├── admin-relatorios.js Relatórios e gráficos
-│   └── pwa.js              Registro do service worker e botão "Instalar app"
+│   ├── pwa.js              Registro do service worker e botão "Instalar app"
+│   └── vendor/qrcode.js    Biblioteca de QR Code (qrcode-generator, licença MIT) usada pelo botão Site
 └── icons/                  Ícones do app
 ```
 
@@ -230,7 +231,10 @@ Menu **PDV**, com três sub-abas:
 
 - **Venda**
   1. É preciso ter o **caixa aberto** (sub-aba Caixa). Sem ele, a tela da venda pede para abrir.
-  2. Adicione produtos clicando neles, digitando na busca ou **lendo o código de barras** (campo "Código de barras / SKU" do produto) e apertando Enter. Produtos com variações pedem a opção.
+  2. Adicione produtos clicando neles, digitando na busca (nome, **SKU ou código de barras**) e apertando Enter, com um **leitor USB** (ele "digita" o código e dá Enter) ou com o botão **Câmera**. Produtos com variações pedem a opção.
+     - **Botão Câmera** (ao lado da busca): abre a câmera do celular (ou do computador) em tela cheia, com uma mira. Cada código lido **adiciona o produto à venda** com um bipe e o leitor continua aberto para o próximo item. Se o código for de uma variação (ex.: tamanho M), adiciona aquela variação; se for de um produto com variações, abre a escolha da variação. Se o código **não estiver cadastrado**, aparece o atalho "Cadastrar produto com este código" (abre o cadastro rápido já preenchido). Há também um campo para digitar o código e o botão de **lanterna** (quando a câmera permite). Fecha com ✕ ou Esc.
+     - A câmera usa o leitor do próprio navegador (Chrome/Edge no Android e no computador) e, onde ele não existe (Safari/iPhone, Firefox), baixa uma biblioteca de leitura (precisa de internet). Só funciona em **endereço seguro (https ou localhost)** e pede permissão de câmera.
+     - O código é comparado sem diferenciar maiúsculas e minúsculas, e um EAN-13 que comece com 0 é reconhecido como o UPC-A de 12 dígitos.
   3. Ajuste quantidades, informe um **desconto** (R$ ou %) e o cliente (opcional).
   4. **Receber (F4)**: escolha a forma de pagamento e adicione; dá para combinar várias formas na mesma venda (ex.: parte em dinheiro, parte a prazo). A venda só conclui quando o total estiver coberto.
      - **Dinheiro**: informe o valor recebido do cliente e o **troco** aparece na hora.
@@ -267,7 +271,8 @@ Menu **PDV**, com três sub-abas:
 
 ### Produtos
 - O botão **Adicionar exemplos** acrescenta o catálogo de acessórios de exemplo (veja o passo 3.7).
-- Além dos campos básicos, há **código de barras / SKU** (usado na busca do PDV) e **custo** (usado no lucro dos relatórios).
+- Além dos campos básicos, há **SKU / código de barras** (usado na busca e na câmera do PDV; ao lado do campo há um botão de câmera para preenchê-lo lendo o código, e o sistema avisa se o código já pertence a outro produto), **estoque mínimo** e **custo** (usado no lucro dos relatórios).
+- Cada **variação** pode ter o seu próprio **SKU / código de barras** (ex.: cada tamanho com um código diferente). No PDV, ler o código da variação adiciona exatamente aquela variação.
 - Foto: envie um arquivo (é reduzida automaticamente para 600 px e guardada no próprio documento) ou cole uma URL de imagem.
 - **Variações:** clique em *Adicionar* e informe nome e estoque (ex.: `M - Azul`, `40`). Com variações, o estoque total é a soma delas e a loja exige que o cliente escolha uma opção.
 - *Visível na loja* desmarcado oculta o produto sem excluí-lo.
@@ -306,7 +311,7 @@ Menu **Estoque**, com quatro sub-abas:
 - Código, tipo (percentual ou valor fixo), valor, pedido mínimo e ativo/inativo.
 
 ### Configurações do site
-A aba **Configurações** controla o site de compra inteiro. Ela tem 7 seções (abas no topo da tela); depois de mexer, clique em **Salvar configurações** e recarregue a loja para ver o resultado.
+A aba **Configurações** controla o site de compra inteiro. No alto da tela há o botão **Site**, com três opções: **QR Code**, **Copiar link** e **Abrir site** (veja "Site: QR Code e link" mais abaixo). Ela tem 7 seções (abas no topo da tela); depois de mexer, clique em **Salvar configurações** e recarregue a loja para ver o resultado.
 
 | Seção | O que dá para ajustar |
 |---|---|
@@ -321,7 +326,16 @@ A aba **Configurações** controla o site de compra inteiro. Ela tem 7 seções 
 Validações ao salvar: pelo menos uma forma de receber e uma forma de pagamento ativas; WhatsApp com 10 a 15 dígitos; dias e horários de retirada coerentes.
 
 Observações:
+- O **banner** aparece logo depois do cabeçalho, mostrando a imagem a partir do topo (largura inteira). Imagens muito altas são cortadas só na parte de baixo (altura máxima de 560 px no computador). O título e o botão ficam sobre a imagem, com um degradê escuro para leitura.
 - Logo e banner enviados do computador são reduzidos e guardados dentro do documento de configurações (limite do Firestore: 1 MB por documento). Para imagens grandes, é melhor colar o endereço (URL) de uma imagem hospedada.
+
+#### Site: QR Code e link
+Botão **Site** no alto da tela de Configurações (aparece em todas as abas):
+- **QR Code**: abre uma janela com o QR Code da loja, o endereço embaixo e os botões **Baixar PNG** (imagem grande, boa para imprimir ou postar), **Imprimir** (página com o nome da loja, o QR Code e o endereço, para colar no balcão ou na vitrine) e **Copiar link**. O QR Code é gerado no próprio navegador e foi conferido com um leitor de QR Code.
+- **Copiar link**: copia o endereço da loja e avisa "Link copiado".
+- **Abrir site**: abre a loja em outra aba.
+
+De onde vem o endereço: de **Loja e contato → Endereço (link) do site**. Se ficar em branco, usa o endereço da pasta em que o painel está aberto. **Importante:** se você abrir o painel por `localhost`/`127.0.0.1` (modo de teste), esse endereço só funciona no seu computador/rede; o QR Code mostra um aviso nesse caso. Informe o endereço público (ex.: `https://minhaloja.com.br`) para o QR Code funcionar para os clientes. O sistema acrescenta `https://` se faltar e recusa endereços inválidos.
 
 #### Impressora e avisos de pedido (fim da tela de Configurações)
 Este painel substitui o antigo "Conta e dados". A troca de senha continua disponível em "Esqueci minha senha", na tela de login.

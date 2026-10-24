@@ -50,6 +50,83 @@ window.Admin.modulos.push((A) => {
       <small class="dica">${dica}</small>
     </div>`;
 
+  // ---------- Site: QR Code, copiar link e abrir ----------
+  // Endereço público da loja: o configurado ou a pasta onde o painel está (a loja é o index.html dela)
+  const enderecoSite = (c) => {
+    const manual = String(c.siteUrl || "").trim();
+    if (manual) return /^https?:\/\//i.test(manual) ? manual : "https://" + manual;
+    return location.protocol === "file:" ? "" : new URL("./", location.href).href;
+  };
+  const enderecoDeTeste = (u) => !u || /^https?:\/\/(localhost|127\.|0\.0\.0\.0|192\.168\.|10\.)/i.test(u);
+  const copiarTexto = async (texto) => {
+    try { await navigator.clipboard.writeText(texto); return true; }
+    catch {
+      try {
+        const ta = document.createElement("textarea");
+        ta.value = texto; ta.style.cssText = "position:fixed;opacity:0;top:0;left:0";
+        document.body.appendChild(ta); ta.select();
+        const ok = document.execCommand("copy"); ta.remove(); return ok;
+      } catch { return false; }
+    }
+  };
+  // Monta o QR Code (margem de 4 módulos) como SVG nítido
+  const montarQr = (texto) => {
+    const qr = qrcode(0, "M"); qr.addData(texto); qr.make();
+    const n = qr.getModuleCount(), m = 4, total = n + m * 2;
+    let d = "";
+    for (let r = 0; r < n; r++) {
+      let c = 0;
+      while (c < n) {
+        if (qr.isDark(r, c)) { let f = c; while (f < n && qr.isDark(r, f)) f++; d += "M" + (c + m) + " " + (r + m) + "h" + (f - c) + "v1h-" + (f - c) + "z"; c = f; } else c++;
+      }
+    }
+    const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + total + " " + total + '" shape-rendering="crispEdges" role="img" aria-label="QR Code do site"><rect width="' + total + '" height="' + total + '" fill="#fff"/><path d="' + d + '" fill="#000"/></svg>';
+    return { svg, n, total, margem: m, escuro: (r, c) => qr.isDark(r, c) };
+  };
+  const baixarQrPng = (qr) => {
+    const escala = Math.max(8, Math.floor(1024 / qr.total)), tam = escala * qr.total;
+    const cv = document.createElement("canvas"); cv.width = cv.height = tam;
+    const g = cv.getContext && cv.getContext("2d");
+    if (!g) return toast("Não foi possível gerar a imagem neste navegador");
+    g.fillStyle = "#fff"; g.fillRect(0, 0, tam, tam); g.fillStyle = "#000";
+    for (let r = 0; r < qr.n; r++) for (let c = 0; c < qr.n; c++) if (qr.escuro(r, c)) g.fillRect((c + qr.margem) * escala, (r + qr.margem) * escala, escala, escala);
+    cv.toBlob((blob) => {
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob); a.download = "qrcode-site.png"; a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 3000);
+      toast("QR Code baixado");
+    }, "image/png");
+  };
+  const imprimirQr = (qr, url, loja) => {
+    const w = window.open("", "_blank");
+    if (!w) return toast("Permita pop-ups para imprimir");
+    w.document.write("<!doctype html><html lang=\"pt-BR\"><head><meta charset=\"utf-8\"><title>QR Code — " + esc(loja) + "</title><style>" +
+      "@page{margin:15mm}body{font-family:system-ui,Segoe UI,Arial,sans-serif;text-align:center;color:#111;margin:0}" +
+      "h1{font-size:30px;margin:10px 0 4px}p{margin:6px 0;font-size:16px;color:#374151}.qr{width:min(120mm,80vw);margin:18px auto}.qr svg{width:100%;height:auto;display:block}" +
+      ".url{font-size:15px;word-break:break-all;font-weight:600}.no{margin:16px}@media print{.no{display:none}}</style></head><body>" +
+      "<h1>" + esc(loja) + "</h1><p>Aponte a câmera do celular para acessar nossa loja</p><div class=\"qr\">" + qr.svg + "</div><p class=\"url\">" + esc(url) + "</p>" +
+      "<p class=\"no\"><button onclick=\"window.print()\">Imprimir</button></p><script>window.onload=function(){setTimeout(function(){window.print()},300)}<\/script></body></html>");
+    w.document.close();
+  };
+  const abrirQr = (c) => {
+    const url = enderecoSite(c);
+    if (!url) return toast("Abra o painel por um endereço da internet (ou informe o endereço do site em Loja e contato).");
+    let qr;
+    try { qr = montarQr(url); } catch { return toast("Não foi possível gerar o QR Code deste endereço"); }
+    A.abrirModal("QR Code do site", '<div class="qr-box"><div class="qr-img">' + qr.svg + '</div><p class="qr-url"><a href="' + esc(url) + '" target="_blank" rel="noopener">' + esc(url) + "</a></p>" +
+      (enderecoDeTeste(url) ? '<p class="qr-aviso"><i class="fa-solid fa-triangle-exclamation"></i> Este é um endereço de teste (só funciona neste computador ou na sua rede). Para o QR Code funcionar para os clientes, informe o endereço público em <b>Loja e contato → Endereço do site</b>.</p>' : "") +
+      '<div class="barra-acoes" style="justify-content:center"><button type="button" class="btn sec" id="qr-baixar"><i class="fa-solid fa-download"></i> Baixar PNG</button><button type="button" class="btn sec" id="qr-imprimir"><i class="fa-solid fa-print"></i> Imprimir</button><button type="button" class="btn sec" id="qr-copiar"><i class="fa-regular fa-copy"></i> Copiar link</button></div></div>',
+      () => {}, { salvar: "Fechar", semCancelar: true });
+    $("#qr-baixar").onclick = () => baixarQrPng(qr);
+    $("#qr-imprimir").onclick = () => imprimirQr(qr, url, c.nomeLoja || "Loja");
+    $("#qr-copiar").onclick = async () => toast((await copiarTexto(url)) ? "Link copiado" : "Não foi possível copiar. Copie manualmente: " + url);
+  };
+  // menu "Site" fecha ao clicar fora ou com Esc (ouvintes únicos)
+  const fecharMenuSite = () => { const m = $("#site-menu"); if (m && !m.hidden) { m.hidden = true; $("#site-btn").setAttribute("aria-expanded", "false"); } };
+  document.addEventListener("click", (e) => { if (!e.target.closest("#menu-site")) fecharMenuSite(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") fecharMenuSite(); });
+  A.enderecoSite = enderecoSite;
+
   // ---------- Tela ----------
   A.telas.config = async () => {
     A.carregando("config");
@@ -63,6 +140,7 @@ window.Admin.modulos.push((A) => {
       loja: `
         ${titulo("Dados da loja")}
         ${grade(campo("Nome da loja", "nomeLoja", c.nomeLoja, "required"), campo("Slogan", "slogan", c.slogan))}
+        ${campo("Endereço (link) do site", "siteUrl", c.siteUrl, 'type="url" inputmode="url" placeholder="https://minhaloja.com.br"', "Usado no QR Code e no link copiado (botão Site, no alto desta tela). Em branco, usa o endereço atual do painel.")}
         ${titulo("Contato", "Aparece na seção Contato da página inicial. Deixe em branco o que não usar.")}
         ${grade(
           campo("WhatsApp (DDI + DDD + número, só dígitos)", "whatsapp", c.whatsapp, 'required inputmode="numeric"', "Recebe o resumo do pedido. Ex.: 5581999998888"),
@@ -159,7 +237,15 @@ window.Admin.modulos.push((A) => {
     };
 
     $("#tab-config").innerHTML = `
-      <div class="cab"><h1>Configurações do site</h1><a class="btn sec peq" href="index.html" target="_blank" rel="noopener"><i class="fa-solid fa-arrow-up-right-from-square"></i> Ver loja</a></div>
+      <div class="cab"><h1>Configurações do site</h1><div class="menu-site" id="menu-site">
+        <button type="button" class="btn" id="site-btn" aria-haspopup="menu" aria-expanded="false"><i class="fa-solid fa-globe"></i> Site <i class="fa-solid fa-chevron-down"></i></button>
+        <div class="menu-pop" id="site-menu" role="menu" hidden>
+          <button type="button" role="menuitem" data-site="qr"><i class="fa-solid fa-qrcode"></i> QR Code</button>
+          <button type="button" role="menuitem" data-site="copiar"><i class="fa-regular fa-copy"></i> Copiar link</button>
+          <button type="button" role="menuitem" data-site="abrir"><i class="fa-solid fa-arrow-up-right-from-square"></i> Abrir site</button>
+          <div class="menu-url" id="site-url"></div>
+        </div>
+      </div></div>
       <p class="dica" style="margin-bottom:10px">Tudo o que o cliente vê e preenche na loja é ajustado aqui. As mudanças aparecem na loja ao recarregar a página.</p>
       <div class="cfg-abas" id="cfg-abas" role="tablist">${SECOES.map(([k, n, ic]) => `<button type="button" role="tab" data-secao="${k}" class="${k === secaoAtual ? "ativo" : ""}"><i class="fa-solid ${ic}"></i> ${n}</button>`).join("")}</div>
       <form class="painel cfg-form" id="form-config" novalidate>
@@ -204,6 +290,18 @@ window.Admin.modulos.push((A) => {
       </div>`;
 
     const form = $("#form-config");
+    $("#site-url").textContent = enderecoSite(c) || "Endereço indisponível (painel aberto como arquivo)";
+    $("#site-btn").onclick = () => { const m = $("#site-menu"), abrir = m.hidden; m.hidden = !abrir; $("#site-btn").setAttribute("aria-expanded", String(abrir)); if (abrir) $("#site-url").textContent = enderecoSite(c) || "Endereço indisponível (painel aberto como arquivo)"; };
+    $("#site-menu").onclick = async (e) => {
+      const b = e.target.closest("[data-site]");
+      if (!b) return;
+      fecharMenuSite();
+      const url = enderecoSite(c);
+      if (b.dataset.site === "qr") return abrirQr(c);
+      if (!url) return toast("Abra o painel por um endereço da internet (ou informe o endereço do site em Loja e contato).");
+      if (b.dataset.site === "copiar") toast((await copiarTexto(url)) ? "Link copiado" : "Não foi possível copiar. Copie manualmente: " + url);
+      if (b.dataset.site === "abrir") window.open(url, "_blank", "noopener");
+    };
     const sujo = () => { $("#cfg-estado").textContent = "Alterações não salvas"; };
     form.addEventListener("input", sujo);
     form.addEventListener("change", sujo);
@@ -291,7 +389,7 @@ window.Admin.modulos.push((A) => {
       const on = (n) => form.elements[n].checked;
       const novo = { ...c };
       Object.assign(novo, {
-        nomeLoja: f("nomeLoja"), slogan: f("slogan"), whatsapp: f("whatsapp").replace(/\D/g, ""), telefone: f("telefone"), email: f("email"),
+        nomeLoja: f("nomeLoja"), slogan: f("slogan"), siteUrl: f("siteUrl"), whatsapp: f("whatsapp").replace(/\D/g, ""), telefone: f("telefone"), email: f("email"),
         instagram: f("instagram"), facebook: f("facebook"), endereco: f("endereco"), horario: f("horario"), mostrarMapa: on("mostrarMapa"), zapFlutuante: on("zapFlutuante"),
         corPrimaria: f("corPrimaria"), corSecundaria: f("corSecundaria"), corDestaque: f("corDestaque"), corFundo: f("corFundo"), corTexto: f("corTexto"),
         fonte: f("fonte"), cantos: f("cantos"),
@@ -313,6 +411,11 @@ window.Admin.modulos.push((A) => {
         textoSucesso: f("textoSucesso"), textoFinalWhats: f("textoFinalWhats"), rodapeTexto: f("rodapeTexto"),
       });
       if (!novo.nomeLoja) return erro("loja", "nomeLoja", "Informe o nome da loja");
+      if (novo.siteUrl) {
+        const bruto = /^https?:\/\//i.test(novo.siteUrl) ? novo.siteUrl : "https://" + novo.siteUrl;
+        try { const u = new URL(bruto); if (!u.hostname.includes(".") && u.hostname !== "localhost") throw new Error("host"); novo.siteUrl = bruto; }
+        catch { return erro("loja", "siteUrl", "Endereço do site inválido (ex.: https://minhaloja.com.br)"); }
+      }
       if (novo.whatsapp.length < 10 || novo.whatsapp.length > 15) return erro("loja", "whatsapp", "WhatsApp inválido (use DDI + DDD + número, só dígitos)");
       if (!novo.entregaAtiva && !novo.retiradaAtiva) return erro("entrega", "entregaAtiva", "Ative pelo menos uma forma de receber: entrega ou retirada");
       if (!Object.values(novo.pagamentos).some(Boolean)) return erro("pagamento", "pg_pix", "Ative pelo menos uma forma de pagamento");

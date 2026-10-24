@@ -80,7 +80,8 @@ window.Admin.modulos.push((A) => {
         <div class="pdv-cat">
           <div class="pdv-topo">
             <input id="pdv-busca" placeholder="Buscar produto ou ler código de barras (F2)" autocomplete="off" />
-            <button type="button" class="btn" id="pdv-novo-produto" title="Cadastrar um produto agora"><i class="fa-solid fa-box-open"></i> Novo produto</button>
+            <button type="button" class="btn sec" id="pdv-camera" title="Ler código de barras ou SKU com a câmera"><i class="fa-solid fa-camera"></i> <span class="rot">Câmera</span></button>
+            <button type="button" class="btn" id="pdv-novo-produto" title="Cadastrar um produto agora"><i class="fa-solid fa-box-open"></i> <span class="rot">Novo produto</span></button>
           </div>
           <div class="chips-adm" id="pdv-chips"></div>
           <div class="pdv-grid" id="pdv-produtos"></div>
@@ -117,15 +118,21 @@ window.Admin.modulos.push((A) => {
       e.preventDefault();
       const t = termo.trim();
       if (!t) return;
-      const exato = produtos.find((p) => p.codigo && p.codigo.toLowerCase() === t.toLowerCase());
-      const alvo = exato || (filtrados().length === 1 ? filtrados()[0] : null);
+      const achado = acharPorCodigo(t);
+      if (achado) {
+        if (achado.vid) adicionar(achado.p, achado.vid); else escolher(achado.p);
+        termo = ""; e.target.value = ""; desenharProdutos();
+        return;
+      }
+      const alvo = filtrados().length === 1 ? filtrados()[0] : null;
       if (!alvo) return toast("Produto não encontrado");
       escolher(alvo);
       termo = ""; e.target.value = ""; desenharProdutos();
     };
     $("#pdv-cliente").oninput = (e) => { cliente = e.target.value; const c = clientes.find((x) => x.nome.toLowerCase() === cliente.trim().toLowerCase()); clienteId = c ? c.id : ""; infoCliente(); };
     $("#pdv-novo-cliente").onclick = () => A.formCliente(null, (novo) => definirCliente(novo), { nome: cliente });
-    $("#pdv-novo-produto").onclick = produtoRapido;
+    $("#pdv-novo-produto").onclick = () => produtoRapido();
+    $("#pdv-camera").onclick = abrirCamera;
     infoCliente();
     $("#pdv-desc-valor").oninput = (e) => { desconto.valor = parseFloat(e.target.value) || 0; desenharTotais(); };
     $("#pdv-desc-tipo").onchange = (e) => { desconto.tipo = e.target.value; desenharTotais(); };
@@ -164,7 +171,7 @@ window.Admin.modulos.push((A) => {
     const t = termo.trim().toLowerCase();
     return produtos.filter((p) =>
       (catAtiva === "all" || p.categoria === catAtiva) &&
-      (!t || (p.nome + " " + (p.codigo || "")).toLowerCase().includes(t)));
+      (!t || (p.nome + " " + (p.codigo || "") + " " + (p.variantes || []).map((v) => v.codigo || "").join(" ")).toLowerCase().includes(t)));
   };
   const desenharChips = () => {
     $("#pdv-chips").innerHTML = `<button type="button" data-cat="all" class="${catAtiva === "all" ? "ativo" : ""}">Todos</button>` +
@@ -223,11 +230,39 @@ window.Admin.modulos.push((A) => {
     infoCliente();
   };
 
-  const produtoRapido = () => {
+  // ---------- código de barras / SKU ----------
+  const normCodigo = (s) => String(s || "").trim().toLowerCase().replace(/\s+/g, "");
+  const semZeros = (s) => s.replace(/^0+(?=\d)/, "");
+  const acharPorCodigo = (texto) => {
+    const alvo = normCodigo(texto);
+    if (!alvo) return null;
+    const igual = (c) => { const x = normCodigo(c); return !!x && (x === alvo || (/^\d+$/.test(x) && /^\d+$/.test(alvo) && semZeros(x) === semZeros(alvo))); };
+    for (const p of produtos) {
+      if (igual(p.codigo)) return { p, vid: "" };
+      const v = (p.variantes || []).find((x) => igual(x.codigo));
+      if (v) return { p, vid: v.id };
+    }
+    return null;
+  };
+  // chamado pelo leitor de câmera a cada código lido
+  const lerCodigo = (codigo) => {
+    const achado = acharPorCodigo(codigo);
+    if (!achado) return { manter: true, erro: `Código ${codigo} não cadastrado`, acao: { texto: "Cadastrar produto com este código", fn: () => produtoRapido(codigo) } };
+    const { p, vid } = achado;
+    if (temVariantes(p) && !vid) { setTimeout(() => escolher(p), 0); return { manter: false, ok: `${p.nome}: escolha a variação` }; }
+    const nome = p.nome + (vid ? " — " + p.variantes.find((v) => v.id === vid).nome : "");
+    return adicionar(p, vid) ? { manter: true, ok: `${nome} adicionado` } : { manter: true, erro: `${nome}: sem estoque suficiente` };
+  };
+  const abrirCamera = () => {
+    if (!A.scanner.suportado()) return toast("Este navegador não permite usar a câmera. Digite o código na busca ou use um leitor USB.");
+    A.scanner.abrir({ titulo: "Ler código de barras / SKU", aoLer: lerCodigo });
+  };
+
+  const produtoRapido = (codigoInicial = "") => {
     abrirModal("Novo produto", `
       <label>Nome<input name="nome" required autocomplete="off" /></label>
       <div class="grid2">
-        <label>Código de barras / SKU<input name="codigo" autocomplete="off" /></label>
+        <label>Código de barras / SKU<span class="campo-scan"><input name="codigo" autocomplete="off" value="${esc(codigoInicial)}" /><button type="button" class="btn sec" id="rapido-scan" title="Ler com a câmera" aria-label="Ler código com a câmera"><i class="fa-solid fa-camera"></i></button></span></label>
         <label>Categoria<select name="categoria"><option value="">Sem categoria</option>${categorias.map((c) => `<option value="${esc(c.id)}">${esc(c.nome)}</option>`).join("")}</select></label>
       </div>
       <div class="grid2">
@@ -255,6 +290,10 @@ window.Admin.modulos.push((A) => {
         toast("Produto cadastrado");
         setTimeout(() => { desenharProdutos(); if (d.add === "on") adicionar(novo, ""); }, 0);
       }, { salvar: "Cadastrar produto" });
+    $("#rapido-scan").onclick = () => {
+      if (!A.scanner.suportado()) return toast("Este navegador não permite usar a câmera.");
+      A.scanner.abrir({ titulo: "Ler código do produto", aoLer: (c) => { $("#modal-form").elements.codigo.value = c; return { manter: false, ok: `Código ${c} lido` }; } });
+    };
   };
 
   const escolher = (p) => {
@@ -271,10 +310,11 @@ window.Admin.modulos.push((A) => {
   const adicionar = (p, vid) => {
     const disponivel = estoqueDe(p, vid);
     const existente = cart.find((i) => i.id === p.id && i.vid === vid);
-    if ((existente ? existente.qtd : 0) + 1 > disponivel) return toast(disponivel <= 0 ? "Produto sem estoque" : `Estoque disponível: ${disponivel}`);
+    if ((existente ? existente.qtd : 0) + 1 > disponivel) { toast(disponivel <= 0 ? "Produto sem estoque" : `Estoque disponível: ${disponivel}`); return false; }
     if (existente) existente.qtd++;
     else cart.push({ id: p.id, vid, nome: p.nome, variante: vid ? p.variantes.find((v) => v.id === vid).nome : "", preco: p.preco, custo: p.custo ?? null, qtd: 1 });
     desenharCarrinho();
+    return true;
   };
   const alterarQtd = (item, delta) => {
     const p = produtos.find((x) => x.id === item.id);

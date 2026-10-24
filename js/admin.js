@@ -451,7 +451,7 @@ document.addEventListener("DOMContentLoaded", () => {
     abrirModal(id ? "Editar produto" : "Novo produto", `
       <label>Nome<input name="nome" value="${esc(p.nome)}" required /></label>
       <div class="grid2">
-        <label>Código de barras / SKU (PDV)<input name="codigo" value="${esc(p.codigo || "")}" /></label>
+        <label>SKU / código de barras<span class="campo-scan"><input name="codigo" value="${esc(p.codigo || "")}" autocomplete="off" /><button type="button" class="btn sec" id="scan-codigo" title="Ler com a câmera" aria-label="Ler código com a câmera"><i class="fa-solid fa-camera"></i></button></span><small class="dica">Usado para achar o produto no PDV: digitando, com leitor USB ou com a câmera.</small></label>
         <label>Custo (R$) — para lucro nos relatórios<input name="custo" type="number" step="0.01" min="0" value="${p.custo ?? ""}" /></label>
       </div>
       <label>Categoria<select name="categoria"><option value="">Sem categoria</option>${cats.filter((c) => !c.pai).sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR")).flatMap((c) => [c, ...cats.filter((f) => f.pai === c.id)]).map((c) => `<option value="${esc(c.id)}" ${c.id === p.categoria ? "selected" : ""}>${c.pai ? "↳ " : ""}${esc(c.nome)}</option>`).join("")}</select></label>
@@ -465,7 +465,7 @@ document.addEventListener("DOMContentLoaded", () => {
       </div>
       <div class="vars-box">
         <div class="vars-cab"><b>Variações (tamanho, cor...)</b><button type="button" class="btn sec peq" id="add-var"><i class="fa-solid fa-plus"></i> Adicionar</button></div>
-        <p class="dica">Opcional. Cada variação tem estoque próprio (ex.: "M - Azul"). Com variações, o estoque total é a soma delas.</p>
+        <p class="dica">Opcional. Cada variação tem estoque próprio e pode ter seu SKU / código de barras (ex.: "M - Azul"). Com variações, o estoque total é a soma delas.</p>
         <div id="vars-lista"></div>
       </div>
       <label>Descrição<textarea name="descricao" rows="3">${esc(p.descricao)}</textarea></label>
@@ -479,7 +479,7 @@ document.addEventListener("DOMContentLoaded", () => {
       async (d) => {
         const url = d.imagemUrl.trim();
         const variantes = [...document.querySelectorAll("#vars-lista .var-linha")]
-          .map((l) => ({ id: l.dataset.id, nome: l.querySelector(".v-nome").value.trim(), estoque: Math.max(0, parseInt(l.querySelector(".v-est").value, 10) || 0) }))
+          .map((l) => ({ id: l.dataset.id, nome: l.querySelector(".v-nome").value.trim(), codigo: l.querySelector(".v-cod").value.trim(), estoque: Math.max(0, parseInt(l.querySelector(".v-est").value, 10) || 0) }))
           .filter((v) => v.nome);
         if (new Set(variantes.map((v) => v.nome.toLowerCase())).size !== variantes.length) { toast("Há variações com o mesmo nome"); return false; }
         const item = {
@@ -510,7 +510,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const l = document.createElement("div");
       l.className = "var-linha";
       l.dataset.id = v.id || "v" + Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
-      l.innerHTML = `<input class="v-nome" placeholder="Nome (ex.: M - Azul)" value="${esc(v.nome || "")}" /><input class="v-est" type="number" min="0" step="1" placeholder="Estoque" value="${v.estoque ?? 0}" /><button type="button" class="rem-var" aria-label="Remover variação">&times;</button>`;
+      l.innerHTML = `<input class="v-nome" placeholder="Nome (ex.: M - Azul)" value="${esc(v.nome || "")}" /><input class="v-cod" placeholder="SKU / código" value="${esc(v.codigo || "")}" autocomplete="off" /><input class="v-est" type="number" min="0" step="1" placeholder="Estoque" value="${v.estoque ?? 0}" /><button type="button" class="rem-var" aria-label="Remover variação">&times;</button>`;
       l.querySelector(".v-est").oninput = somar;
       l.querySelector(".rem-var").onclick = () => { l.remove(); somar(); };
       lista.appendChild(l);
@@ -518,6 +518,21 @@ document.addEventListener("DOMContentLoaded", () => {
     (p.variantes || []).forEach(linhaVar);
     somar();
     $("#add-var").onclick = () => { linhaVar(); somar(); lista.lastChild.querySelector(".v-nome").focus(); };
+    $("#scan-codigo").onclick = () => {
+      if (!window.Admin.scanner.suportado()) return toast("Este navegador não permite usar a câmera. Digite o código ou use um leitor USB.");
+      window.Admin.scanner.abrir({
+        titulo: "Ler código do produto",
+        aoLer: async (codigo) => {
+          $("#modal-form").elements.codigo.value = codigo;
+          let aviso = "";
+          try {
+            const outro = (await DB.produtos.listar()).find((x) => x.id !== id && [x.codigo, ...(x.variantes || []).map((v) => v.codigo)].some((c) => c && c.toLowerCase() === codigo.toLowerCase()));
+            if (outro) aviso = `Atenção: este código já está em "${outro.nome}"`;
+          } catch { /* ignorado */ }
+          return aviso ? { manter: false, erro: aviso } : { manter: false, ok: `Código ${codigo} lido` };
+        },
+      });
+    };
     $("#img-url").oninput = (e) => { if (e.target.value) { $("#img-prev").src = e.target.value; $("#img-prev").hidden = false; } };
   }
   $("#tab-produtos").addEventListener("click", async (e) => {

@@ -30,6 +30,7 @@
     endereco: "",
     horario: "Seg a Sex, 9h às 18h",
     mostrarMapa: true,
+    siteUrl: "",           // endereço público da loja (QR Code e link copiado); em branco = endereço atual do painel
     zapFlutuante: true,
     // Aparência
     corPrimaria: "#4f46e5",

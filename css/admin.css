@@ -129,7 +129,7 @@ td.acoes { white-space: nowrap; text-align: right; }
 .vars-box { border: 1px dashed var(--borda); border-radius: 10px; padding: 12px; display: grid; gap: 8px; }
 .vars-cab { display: flex; justify-content: space-between; align-items: center; }
 .dica { font-size: .8rem; color: var(--suave); }
-.var-linha { display: grid; grid-template-columns: 1fr 100px 32px; gap: 8px; margin-bottom: 6px; }
+.var-linha { display: grid; grid-template-columns: 1.3fr 1fr 78px 32px; gap: 8px; margin-bottom: 6px; }
 .rem-var { font-size: 1.3rem; color: var(--suave); }
 .rem-var:hover { color: var(--erro); }
 input[readonly] { background: #f3f4f6; }
@@ -398,3 +398,40 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; gap: 6
   .tabela-estoque td[data-label="Valor"] small { display: none; }
   .tabela-estoque td[data-label="Nome"] .cel-prod { flex: 1; }
 }
+
+/* ===== Leitor de código de barras (câmera) ===== */
+.campo-scan { display: flex; gap: 6px; }
+.campo-scan input { flex: 1; min-width: 0; }
+.campo-scan .btn { padding: 0 12px; flex: none; }
+.scanner { position: fixed; inset: 0; z-index: 400; background: #0b0f19; color: #fff; display: flex; flex-direction: column; }
+.sc-topo { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: rgba(255,255,255,.08); }
+.sc-fechar { color: #fff; font-size: 2rem; line-height: 1; padding: 0 8px; }
+.sc-video { position: relative; flex: 1; min-height: 0; background: #000; overflow: hidden; display: grid; place-items: center; }
+.sc-video video { width: 100%; height: 100%; object-fit: cover; }
+.sc-mira { position: absolute; inset: 0; display: grid; place-items: center; pointer-events: none; }
+.sc-mira span { width: min(78%, 420px); aspect-ratio: 5 / 3; border: 3px solid rgba(255,255,255,.9); border-radius: 18px; box-shadow: 0 0 0 100vmax rgba(0,0,0,.45); position: relative; }
+.sc-mira span::after { content: ""; position: absolute; left: 6%; right: 6%; top: 50%; height: 2px; background: #ef4444; box-shadow: 0 0 10px #ef4444; animation: sc-varre 1.6s ease-in-out infinite alternate; }
+@keyframes sc-varre { from { transform: translateY(-60px); } to { transform: translateY(60px); } }
+.sc-msg { display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap; min-height: 54px; padding: 10px 16px; text-align: center; background: rgba(255,255,255,.06); }
+.sc-texto.ok { color: #4ade80; font-weight: 700; } .sc-texto.erro { color: #fca5a5; font-weight: 700; }
+.sc-msg .link-btn { color: #93c5fd; }
+.sc-acoes { display: flex; justify-content: center; gap: 10px; padding: 8px 16px 0; background: rgba(255,255,255,.06); }
+.sc-acoes:empty, .sc-acoes:not(:has(button:not([hidden]))) { display: none; }
+.sc-manual { display: flex; gap: 8px; padding: 10px 16px calc(14px + env(safe-area-inset-bottom)); background: rgba(255,255,255,.06); }
+.sc-manual input { flex: 1; background: #fff; }
+@media (max-width: 520px) { .pdv-topo .rot { display: none; } .pdv-topo .btn { padding: 10px 12px; } }
+@media (prefers-reduced-motion: reduce) { .sc-mira span::after { animation: none; } }
+
+/* ===== Menu "Site" nas Configurações e QR Code ===== */
+.menu-site { position: relative; }
+.menu-pop { position: absolute; right: 0; top: calc(100% + 6px); z-index: 60; min-width: 250px; background: #fff; border: 1px solid var(--borda); border-radius: 12px; box-shadow: 0 12px 32px rgba(0,0,0,.18); padding: 6px; display: grid; }
+.menu-pop[hidden] { display: none; }
+.menu-pop button { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; padding: 11px 12px; border-radius: 8px; font-size: .95rem; }
+.menu-pop button:hover, .menu-pop button:focus-visible { background: color-mix(in srgb, var(--primaria) 10%, #fff); color: var(--primaria); outline: none; }
+.menu-pop button i { width: 1.1em; text-align: center; color: var(--primaria); }
+.menu-url { border-top: 1px solid var(--borda); margin-top: 4px; padding: 8px 12px 4px; font-size: .75rem; color: var(--suave); word-break: break-all; }
+.qr-box { display: grid; gap: 12px; justify-items: center; text-align: center; }
+.qr-img { width: min(300px, 70vw); border: 1px solid var(--borda); border-radius: 14px; padding: 6px; background: #fff; }
+.qr-img svg { width: 100%; height: auto; display: block; }
+.qr-url { font-size: .85rem; word-break: break-all; }
+.qr-aviso { font-size: .82rem; background: #fef3c7; color: #92400e; border-radius: 10px; padding: 10px 12px; text-align: left; }

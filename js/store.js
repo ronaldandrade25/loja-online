@@ -71,9 +71,13 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     // banner
     const hero = $("#hero");
+    // O banner é uma imagem de verdade (e não fundo cortado): aparece a partir do topo, logo depois do cabeçalho
+    hero.querySelectorAll(".hero-img").forEach((el) => el.remove());
+    hero.classList.toggle("hero--banner", !!config.bannerUrl);
     if (config.bannerUrl) {
-      hero.style.backgroundImage = `url("${String(config.bannerUrl).replace(/"/g, "%22")}")`;
-      hero.classList.add("hero--banner");
+      const img = new Image();
+      img.className = "hero-img"; img.alt = ""; img.src = config.bannerUrl;
+      hero.prepend(img);
     }
     $("#hero-titulo").textContent = config.bannerTitulo || config.nomeLoja;
     $("#hero-slogan").textContent = config.bannerTexto || config.slogan;

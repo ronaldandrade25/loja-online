@@ -357,3 +357,9 @@ body.no-scroll .zap-flutuante { display: none; }
 @media (max-width: 900px) { .main-nav { margin-left: 0; } }
 
 .cat-card .cat-foto { width: 88px; height: 88px; border-radius: 50%; object-fit: cover; border: 3px solid color-mix(in srgb, var(--primaria) 22%, transparent); background: #fff; }
+
+/* Banner: imagem inteira a partir do topo (logo depois do cabeçalho); só corta embaixo se for muito alta */
+.hero--banner { display: block; min-height: 0; background: var(--secundaria); }
+.hero-img { display: block; width: 100%; height: auto; min-height: 260px; max-height: min(560px, 72vh); object-fit: cover; object-position: center top; }
+.hero--banner .hero-inner { position: absolute; inset: 0; margin: 0 auto; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; }
+@media (max-width: 760px) { .hero-img { min-height: 240px; } .hero--banner .hero-inner { align-items: center; } }
